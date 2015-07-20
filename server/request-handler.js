@@ -47,8 +47,21 @@ exports.requestHandler = function(request, response) {
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
   var parsedURL = url.parse(request.url)
-  if (parsedURL.path === '/classes/messages') {
-    response.end('correct url');
+  if (parsedURL.pathname === '/classes/messages') {
+    response.end(JSON.stringify({results: [
+      {
+        username: 'Kam',
+        text: 'yooo'
+      },
+      {
+        username: 'Mere',
+        text: 'hey!'
+      },
+      {
+        username: 'Mere',
+        text: 'wuddup!'
+      }
+      ]}));
   } else {
     // Make sure to always call response.end() - Node may not send
     // anything back to the client until you do. The string you pass to
