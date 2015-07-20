@@ -47,6 +47,7 @@ exports.requestHandler = function(request, response) {
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
   var parsedURL = url.parse(request.url)
+
   if (parsedURL.pathname === '/classes/messages') {
     response.end(JSON.stringify({results: [
       {
@@ -61,7 +62,14 @@ exports.requestHandler = function(request, response) {
         username: 'Mere',
         text: 'wuddup!'
       }
-      ]}));
+    ]}));
+  } else if (parsedURL.pathname === '/send') {
+    if (request.method === 'OPTIONS') {
+      response.end();
+    }
+    if (request.method === 'POST') {
+      response.end();
+    }
   } else {
     // Make sure to always call response.end() - Node may not send
     // anything back to the client until you do. The string you pass to
