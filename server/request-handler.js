@@ -42,6 +42,8 @@ exports.requestHandler = function(request, response) {
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "application/json";
+  // right now, putting this on all, but ideally should only be on OPTIONS
+  headers['Allow'] = 'GET,POST';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -68,7 +70,9 @@ exports.requestHandler = function(request, response) {
       response.end();
     }
     if (request.method === 'POST') {
-      response.end();
+      response.end(JSON.stringify({
+        results: 'success'
+      }))
     }
   } else {
     // Make sure to always call response.end() - Node may not send
