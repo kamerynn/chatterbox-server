@@ -12,6 +12,8 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+var url = require('url');
+
 exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
