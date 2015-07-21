@@ -36,14 +36,9 @@ var actions = {
   POST: function(request, response) {
     var parsedURL = url.parse(request.url)
     if (parsedURL.pathname === '/send') {
-      var body = '';
-      request.on('data', function(chunk) {
-        body += chunk;
-      })
+      collectData(request, function(data) {
 
-      request.on('end', function() {
-
-        var decodedBody = qs.parse(body);
+        var decodedBody = qs.parse(data);
         // The response is being sent as a key to an object for some reason, like so:
         // '{"username":"Kam","text":"dsa","roomname":"lobby"}'
 
@@ -66,6 +61,16 @@ function sendResponse(response, data, statusCode) {
   statusCode = statusCode || 200;
   response.writeHead(statusCode, headers);
   response.end(JSON.stringify(data));
+}
+
+function collectData(request, cb) {
+  var data = '';
+  request.on('data', function(chunk) {
+    data += chunk;
+  })
+  request.on('end', function() {
+    cb(data)
+  })
 }
 
 var sampleMessages = {
