@@ -10,9 +10,7 @@ exports.requestHandler = function(request, response) {
   //headers['Allow'] = 'GET,POST';
 
   var action = actions[request.method];
-  action ? action(request, response) : function(response) {
-    sendResponse(response, undefined, 404)
-  }
+  action ? action(request, response) : sendResponse(response, undefined, 404);
 };
 
 var headers = {
