@@ -11,29 +11,27 @@ exports.requestHandler = function(request, response) {
 
   var action = actions[request.method];
   action ? action(request, response) : function(response) {
-    // Send 404
-    response.writeHead(404, headers);
-    response.end();
+    sendResponse(response, undefined, 404)
   }
 };
 
-var defaultCorsHeaders = {
+var headers = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
   "access-control-allow-headers": "content-type, accept",
-  "access-control-max-age": 10 // Seconds.
+  "access-control-max-age": 10, // Seconds.
+  "Content-Type": "application/json"
 };
-
-var headers = defaultCorsHeaders;
-headers['Content-Type'] = "application/json";
-
 
 var actions = {
   GET: function(request, response) {
     var parsedURL = url.parse(request.url)
     if (parsedURL.pathname === '/classes/messages') {
-      response.writeHead(200, headers);
-      response.end(JSON.stringify(sampleMessages));
+      sendResponse(response, sampleMessages);
+    }
+
+    if (parsedURL.pathname === '/classes/room') {
+
     }
   },
 
@@ -46,7 +44,6 @@ var actions = {
       })
 
       request.on('end', function() {
-        response.writeHead(201, headers);
 
         var decodedBody = qs.parse(body);
         // The response is being sent as a key to an object for some reason, like so:
@@ -56,18 +53,21 @@ var actions = {
         var message = Object.keys(decodedBody)[0];
         // The messages are separated by new lines
         fs.appendFile('./messagelog.txt', message + '\n', function() {
-          response.end(JSON.stringify({
-            results: 'success'
-          }))
+          sendResponse(response, {results: 'success'}, 201);
         })
       })
     }
   },
 
   OPTIONS: function(request, response) {
-    response.writeHead(200, headers);
-    response.end();
+    sendResponse(response);
   }
+}
+
+function sendResponse(response, data, statusCode) {
+  statusCode = statusCode || 200;
+  response.writeHead(statusCode, headers);
+  response.end(JSON.stringify(data));
 }
 
 var sampleMessages = {
