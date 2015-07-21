@@ -12,40 +12,29 @@ var messages = [
 ]
 
 exports.requestHandler = function(request, response) {
-
   console.log("Serving request type " + request.method + " for url " + request.url);
-
-  // right now, putting this on all, but ideally should only be on OPTIONS
-  //headers['Allow'] = 'GET,POST';
 
   var action = actions[request.method];
   action ? action(request, response) : helpers.sendResponse(response, undefined, 404);
 };
 
-
-
 var actions = {
   GET: function(request, response) {
-    var parsedURL = url.parse(request.url)
-    if (parsedURL.pathname === '/classes/messages') {
+    var pathname = url.parse(request.url).pathname
+    if (pathname === '/classes/messages') {
       helpers.sendResponse(response, {results: messages});
     }
 
-    if (parsedURL.pathname === '/classes/room') {
-
-    }
+    if (pathname === '/classes/room') {}
   },
 
   POST: function(request, response) {
-    var parsedURL = url.parse(request.url)
-    if (parsedURL.pathname === '/send') {
+    var pathname = url.parse(request.url).pathname
+    if (pathname === '/send') {
       helpers.collectData(request, function(message) {
-        console.log()
         messages.push(message);
         message.objectId = ++objectId;
-        
         helpers.sendResponse(response, {objectId: objectId}, 201);
-        //fs.appendFile('./messagelog.txt', message + '\n', function() {})
       })
     }
   },
