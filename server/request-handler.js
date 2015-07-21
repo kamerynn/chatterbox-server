@@ -2,6 +2,15 @@ var url = require('url');
 var fs = require('fs');
 var qs = require('querystring');
 
+var objectId = 1;
+var messages = [
+  {
+    username: 'Kam',
+    text: 'yooo',
+    objectId: objectId
+  }
+]
+
 exports.requestHandler = function(request, response) {
 
   console.log("Serving request type " + request.method + " for url " + request.url);
@@ -25,7 +34,7 @@ var actions = {
   GET: function(request, response) {
     var parsedURL = url.parse(request.url)
     if (parsedURL.pathname === '/classes/messages') {
-      sendResponse(response, sampleMessages);
+      sendResponse(response, {results: messages});
     }
 
     if (parsedURL.pathname === '/classes/room') {
@@ -36,17 +45,12 @@ var actions = {
   POST: function(request, response) {
     var parsedURL = url.parse(request.url)
     if (parsedURL.pathname === '/send') {
-      collectData(request, function(data) {
-
-        var decodedBody = qs.parse(data);
-        // The response is being sent as a key to an object for some reason, like so:
-        // '{"username":"Kam","text":"dsa","roomname":"lobby"}'
-
-        // Grab 'key', which is really the POST object
-        var message = Object.keys(decodedBody)[0];
-        // The messages are separated by new lines
+      collectData(request, function(message) {
+        console.log()
+        messages.push(message);
+        message.objectId = ++objectId;
         fs.appendFile('./messagelog.txt', message + '\n', function() {
-          sendResponse(response, {results: 'success'}, 201);
+          sendResponse(response, {objectId: objectId}, 201);
         })
       })
     }
@@ -69,23 +73,6 @@ function collectData(request, cb) {
     data += chunk;
   })
   request.on('end', function() {
-    cb(data)
+    cb(JSON.parse(data))
   })
-}
-
-var sampleMessages = {
-  results: [
-    {
-      username: 'Kam',
-      text: 'yooo'
-    },
-    {
-      username: 'Mere',
-      text: 'hey!'
-    },
-    {
-      username: 'Mere',
-      text: 'wuddup!'
-    }
-  ]
 }
