@@ -6,37 +6,40 @@ exports.requestHandler = function(request, response) {
 
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  var statusCode = 200;
-  var headers = defaultCorsHeaders;
-  headers['Content-Type'] = "application/json";
-
   // right now, putting this on all, but ideally should only be on OPTIONS
   //headers['Allow'] = 'GET,POST';
 
-  var parsedURL = url.parse(request.url)
+  var action = actions[request.method];
+  action ? action(request, response) : function(response) {
+    // Send 404
+    response.writeHead(404, headers);
+    response.end();
+  }
+};
 
-  if (parsedURL.pathname === '/classes/messages') {
-    response.writeHead(statusCode, headers);
-    response.end(JSON.stringify({results: [
-      {
-        username: 'Kam',
-        text: 'yooo'
-      },
-      {
-        username: 'Mere',
-        text: 'hey!'
-      },
-      {
-        username: 'Mere',
-        text: 'wuddup!'
-      }
-    ]}));
-  } else if (parsedURL.pathname === '/send') {
-    if (request.method === 'OPTIONS') {
-      response.writeHead(statusCode, headers);
-      response.end();
+var defaultCorsHeaders = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "access-control-allow-headers": "content-type, accept",
+  "access-control-max-age": 10 // Seconds.
+};
+
+var headers = defaultCorsHeaders;
+headers['Content-Type'] = "application/json";
+
+
+var actions = {
+  GET: function(request, response) {
+    var parsedURL = url.parse(request.url)
+    if (parsedURL.pathname === '/classes/messages') {
+      response.writeHead(200, headers);
+      response.end(JSON.stringify(sampleMessages));
     }
-    if (request.method === 'POST') {
+  },
+
+  POST: function(request, response) {
+    var parsedURL = url.parse(request.url)
+    if (parsedURL.pathname === '/send') {
       var body = '';
       request.on('data', function(chunk) {
         body += chunk;
@@ -53,21 +56,33 @@ exports.requestHandler = function(request, response) {
         var message = Object.keys(decodedBody)[0];
         // The messages are separated by new lines
         fs.appendFile('./messagelog.txt', message + '\n', function() {
-            response.end(JSON.stringify({
+          response.end(JSON.stringify({
             results: 'success'
           }))
         })
       })
     }
-  } else {
-    response.end("Hello, World!");
+  },
+
+  OPTIONS: function(request, response) {
+    response.writeHead(200, headers);
+    response.end();
   }
-};
+}
 
-var defaultCorsHeaders = {
-  "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "access-control-allow-headers": "content-type, accept",
-  "access-control-max-age": 10 // Seconds.
-};
-
+var sampleMessages = {
+  results: [
+    {
+      username: 'Kam',
+      text: 'yooo'
+    },
+    {
+      username: 'Mere',
+      text: 'hey!'
+    },
+    {
+      username: 'Mere',
+      text: 'wuddup!'
+    }
+  ]
+}
