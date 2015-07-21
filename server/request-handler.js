@@ -13,6 +13,7 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 var url = require('url');
+var fs = require('fs');
 
 exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -43,14 +44,15 @@ exports.requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "application/json";
   // right now, putting this on all, but ideally should only be on OPTIONS
-  headers['Allow'] = 'GET,POST';
+  //headers['Allow'] = 'GET,POST';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+  //response.writeHead(statusCode, headers);
   var parsedURL = url.parse(request.url)
 
   if (parsedURL.pathname === '/classes/messages') {
+    response.writeHead(statusCode, headers);
     response.end(JSON.stringify({results: [
       {
         username: 'Kam',
@@ -67,12 +69,17 @@ exports.requestHandler = function(request, response) {
     ]}));
   } else if (parsedURL.pathname === '/send') {
     if (request.method === 'OPTIONS') {
+      response.writeHead(statusCode, headers);
       response.end();
     }
     if (request.method === 'POST') {
-      response.end(JSON.stringify({
-        results: 'success'
-      }))
+      response.writeHead(201, headers);
+      fs.appendFile('./messagelog.txt', 'yoooo', function() {
+          response.end(JSON.stringify({
+          results: 'success'
+        }))
+      })
+
     }
   } else {
     // Make sure to always call response.end() - Node may not send
@@ -82,6 +89,7 @@ exports.requestHandler = function(request, response) {
     //
     // Calling .end "flushes" the response's internal buffer, forcing
     // node to actually send all the data over to the client.
+    
     response.end("Hello, World!");
   }
 
