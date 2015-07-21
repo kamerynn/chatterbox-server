@@ -14,6 +14,7 @@ this file and include it in basic-server.js so that it actually works.
 
 var url = require('url');
 var fs = require('fs');
+var qs = require('querystring');
 
 exports.requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -73,13 +74,27 @@ exports.requestHandler = function(request, response) {
       response.end();
     }
     if (request.method === 'POST') {
-      response.writeHead(201, headers);
-      fs.appendFile('./messagelog.txt', 'yoooo', function() {
-          response.end(JSON.stringify({
-          results: 'success'
-        }))
+      var body = '';
+      request.on('data', function(chunk) {
+        body += chunk;
       })
 
+      request.on('end', function() {
+        response.writeHead(201, headers);
+
+        var decodedBody = qs.parse(body);
+        // The response is being sent as a key to an object for some reason, like so:
+        // '{"username":"Kam","text":"dsa","roomname":"lobby"}'
+
+        // Grab 'key', which is really the POST object
+        var message = Object.keys(decodedBody)[0];
+        // The messages are separated by new lines
+        fs.appendFile('./messagelog.txt', message + '\n', function() {
+            response.end(JSON.stringify({
+            results: 'success'
+          }))
+        })
+      })
     }
   } else {
     // Make sure to always call response.end() - Node may not send
