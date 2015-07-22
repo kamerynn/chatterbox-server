@@ -2,14 +2,7 @@ var url = require('url');
 var fs = require('fs');
 var helpers = require('./http-helpers.js');
 
-var objectId = 1;
-var messages = [
-  {
-    username: 'Kam',
-    text: 'yooo',
-    objectId: objectId
-  }
-]
+
 
 exports.requestHandler = function(request, response, pathname) {
   var action = actions[request.method];
